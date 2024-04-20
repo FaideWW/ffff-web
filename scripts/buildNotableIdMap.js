@@ -28,7 +28,7 @@ const notables = Object.entries(skillTreeJson.nodes).forEach(
     if (node.isNotable === true && node.ascendancyName !== undefined) {
       notableMap[node.name] = parseInt(nodeId);
     }
-  }
+  },
 );
 
 const outpath = path.join(__dirname, "../src/generated/notableIdMap.json");

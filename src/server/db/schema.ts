@@ -30,10 +30,10 @@ export const jewels = pgTable(
     jewelsByStash: index("jewels_by_stash").on(jewels.stashId),
     jewelsByLeague: index("jewels_by_league").on(
       jewels.league,
-      jewels.recordedAt
+      jewels.recordedAt,
     ),
     jewelsByDate: index("jewels_by_date").on(jewels.recordedAt),
-  })
+  }),
 );
 
 export const changesets = pgTable(
@@ -48,10 +48,10 @@ export const changesets = pgTable(
   },
   (changesets) => ({
     changesetsByChangeId: index("changesets_by_changeid").on(
-      changesets.changeId
+      changesets.changeId,
     ),
     changeSetsByDate: index("changesets_by_date").on(changesets.processedAt),
-  })
+  }),
 );
 
 export type ExchangeRates = Record<string, Record<string, number>>;
