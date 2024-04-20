@@ -1,8 +1,30 @@
 import { getLatestJewelSnapshot } from "@/server/queries";
+import notableIdMap from "@/generated/notableIdMap.json";
+
+function buildTradeUrl(league: string, jewelType: string, notableName: string) {
+  let baseType = "";
+  let modId = "";
+  if (jewelType === "Forbidden Flesh") {
+    baseType = "Cobalt Jewel";
+    modId = "explicit.stat_2460506030";
+  } else {
+    baseType = "Crimson Jewel";
+    modId = "explicit.stat_1190333629";
+  }
+  const notableId = (notableIdMap as Record<string, number>)[notableName];
+  if (notableId === undefined) {
+    console.error(`No notableid found for node ${notableName}`);
+  }
+  const tradeQuery = `{"query":{"name":"${jewelType}","type":"${baseType}","stats":[{"type":"and","filters":[{"id":"${modId}","value":{"option":${notableId}},"disabled":false}],"disabled":false}],"status":{"option":"online"}}}
+  `;
+
+  const fullUrl = `https://pathofexile.com/trade/search/${league}/?q=${tradeQuery}`;
+  return fullUrl;
+}
 
 // TODO: move the pairing logic into the stat collection job, so we can just feed the data directly from the DB into the table
 function pairJewels(
-  jewels: Awaited<ReturnType<typeof getLatestJewelSnapshot>>
+  jewels: Awaited<ReturnType<typeof getLatestJewelSnapshot>>,
 ) {
   if (jewels === undefined) return [];
   interface PairMap {
@@ -40,7 +62,8 @@ function pairJewels(
 }
 
 export default async function Home() {
-  const jewels = await getLatestJewelSnapshot(process.env.DEFAULT_LEAGUE!);
+  const league = process.env.DEFAULT_LEAGUE!;
+  const jewels = await getLatestJewelSnapshot(league);
   const pairs = pairJewels(jewels);
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -52,7 +75,6 @@ export default async function Home() {
             <th>Class</th>
             <th>Flame Price</th>
             <th>Flesh Price</th>
-            <th>Trade</th>
           </tr>
         </thead>
         <tbody>
@@ -61,11 +83,27 @@ export default async function Home() {
               <tr key={jewel.node}>
                 <td>{jewel.node}</td>
                 <td>{jewel.class}</td>
-                <td>{jewel.flame}</td>
-                <td>{jewel.flesh}</td>
                 <td>
-                  <a href="#">Trade</a>
+                  {jewel.flame} chaos (
+                  <a
+                    href={buildTradeUrl(league, "Forbidden Flame", jewel.node)}
+                    target="_blank"
+                  >
+                    Trade
+                  </a>
+                  ){" "}
                 </td>
+                <td>
+                  {jewel.flesh} chaos (
+                  <a
+                    href={buildTradeUrl(league, "Forbidden Flesh", jewel.node)}
+                    target="_blank"
+                  >
+                    Trade
+                  </a>
+                  ){" "}
+                </td>
+                <td></td>
               </tr>
             );
           })}

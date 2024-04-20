@@ -22,14 +22,25 @@ try {
   process.exit(1);
 }
 
-const notableMap = {};
-const notables = Object.entries(skillTreeJson.nodes).forEach(
-  ([nodeId, node]) => {
-    if (node.isNotable === true && node.ascendancyName !== undefined) {
-      notableMap[node.name] = parseInt(nodeId);
-    }
-  },
-);
+// Pre-populate with known hidden ascendancy nodes, as those are not found
+// in the skill tree data
+const notableMap = {
+  "Fury of Nature": 18054,
+  "Unleashed Potential": 19355,
+  "Nine Lives": 27602,
+  "Searing Purity": 57568,
+  "Indomitable Resolve": 52435,
+  "Fatal Flourish": 42469,
+};
+
+Object.entries(skillTreeJson.nodes).forEach(([nodeId, node]) => {
+  if (
+    (node.isNotable === true || node.isMultipleChoiceOption === true) &&
+    node.ascendancyName !== undefined
+  ) {
+    notableMap[node.name] = parseInt(nodeId);
+  }
+});
 
 const outpath = path.join(__dirname, "../src/generated/notableIdMap.json");
 fs.writeFileSync(outpath, JSON.stringify(notableMap));
