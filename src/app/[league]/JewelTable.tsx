@@ -41,8 +41,12 @@ export default function JewelTable({ data, exchangeRates }: TableProps) {
     { facet: "class", asc: true },
     { facet: "sum", asc: false },
   ]);
-  const sortedJewels = useMemo(() => {
-    return data.toSorted((a, b) => {
+
+  const [classFilter, setClassFilter] = useState<string>("");
+  const sortedAndFilteredJewels = useMemo(() => {
+    const filtered =
+      classFilter === "" ? data : data.filter((j) => j.class === classFilter);
+    const sorted = filtered.toSorted((a, b) => {
       let diff = 0;
       let orderIdx = 0;
       while (diff === 0 && orderIdx < sortOrder.length) {
@@ -61,7 +65,9 @@ export default function JewelTable({ data, exchangeRates }: TableProps) {
 
       return diff;
     });
-  }, [data, sortOrder]);
+
+    return sorted;
+  }, [data, classFilter, sortOrder]);
 
   const addSort = (facet: keyof JewelPair, defaultAsc: boolean) => {
     setSortOrder((arr) => {
@@ -100,7 +106,7 @@ export default function JewelTable({ data, exchangeRates }: TableProps) {
         </tr>
       </thead>
       <tbody>
-        {sortedJewels.map((jewel) => {
+        {sortedAndFilteredJewels.map((jewel) => {
           const flamePrice = roundCurrency(jewel.flame, exchangeRates);
           const fleshPrice = roundCurrency(jewel.flesh, exchangeRates);
           const totalPrice = roundCurrency(jewel.sum, exchangeRates);
