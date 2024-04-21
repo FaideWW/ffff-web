@@ -25,12 +25,13 @@ try {
 // Pre-populate with known hidden ascendancy nodes, as those are not found
 // in the skill tree data
 const notableMap = {
-  "Fury of Nature": 18054,
-  "Unleashed Potential": 19355,
-  "Nine Lives": 27602,
-  "Searing Purity": 57568,
-  "Indomitable Resolve": 52435,
-  "Fatal Flourish": 42469,
+  "Fury of Nature": 18054, // Ranger
+  "Unleashed Potential": 19355, // Scion
+  "Nine Lives": 27602, // Witch
+  "Fatal Flourish": 42469, // Duelist
+  "Indomitable Resolve": 52435, // Marauder
+  "Harness the Void": 57331, // Shadow
+  "Searing Purity": 57568, // Templar
 };
 
 Object.entries(skillTreeJson.nodes).forEach(([nodeId, node]) => {

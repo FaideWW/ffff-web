@@ -54,10 +54,11 @@ export const changesets = pgTable(
   }),
 );
 
-export type ExchangeRates = Record<string, Record<string, number>>;
+export type ExchangeRates = Record<string, number>;
 
 export const snapshotSets = pgTable("snapshot_sets", {
   id: bigserial("id", { mode: "number" }).primaryKey().notNull(),
+  league: text("league").notNull(),
   exchangeRates: json("exchangerates").notNull().$type<ExchangeRates>(),
   generatedAt: timestamp("generatedat").notNull(),
 });
@@ -77,7 +78,6 @@ export const snapshots = pgTable("snapshots", {
   jewelType: text("jeweltype").notNull(),
   jewelClass: text("jewelclass").notNull(),
   allocatedNode: text("allocatednode").notNull(),
-  league: text("league").notNull(),
   minPrice: real("minprice").notNull(),
   firstQuartilePrice: real("firstquartileprice").notNull(),
   medianPrice: real("medianprice").notNull(),
