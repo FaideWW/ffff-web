@@ -12,9 +12,10 @@ export async function getLatestJewelSnapshotAndLeagues(league: string) {
         snapshots: true,
       },
     }),
-    db.query.snapshotSets.findMany({
-      columns: { league: true },
-    }),
+    db.selectDistinct({ league: snapshotSets.league }).from(snapshotSets),
+    // db.query.snapshotSets.findMany({
+    //   columns: { league: true },
+    // }),
   ]);
   return res;
 }
