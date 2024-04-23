@@ -1,7 +1,6 @@
 "use client";
 
 import type { PerfSample } from "@/server/queries";
-import { extent } from "d3-array";
 import { scaleLinear } from "d3-scale";
 import { Fragment, useMemo } from "react";
 import {
@@ -63,10 +62,10 @@ const charts: ChartData[] = [
 const OPTIMAL_TICK_COUNT = 20;
 export default function PerfCharts({
   data,
+  since,
 }: {
   data: PerfSample[];
   since: Date;
-  scale: "m" | "h" | "d";
 }) {
   const processedData = useMemo(() => {
     return data.map((d) => {
@@ -75,12 +74,9 @@ export default function PerfCharts({
   }, [data]);
 
   const scale = useMemo(() => {
-    const domain = extent(processedData.map((d) => d.processedAt));
-    if (domain[0] === undefined || domain[1] === undefined) {
-      return undefined;
-    }
-    return scaleLinear().domain(domain);
-  }, [processedData]);
+    const now = Date.now();
+    return scaleLinear().domain([since.getTime(), now]);
+  }, [since]);
 
   return (
     <div>
