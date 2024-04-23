@@ -1,7 +1,9 @@
 "use client";
 
 import type { PerfSample } from "@/server/queries";
-import { Fragment } from "react";
+import { extent } from "d3-array";
+import { scaleLinear } from "d3-scale";
+import { Fragment, useMemo } from "react";
 import {
   Area,
   AreaChart,
@@ -12,20 +14,24 @@ import {
   YAxis,
 } from "recharts";
 
-function formatDate(date: Date) {
-  return date.toLocaleTimeString("en-US", {
-    hourCycle: "h23",
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+function formatDate(date: number) {
+  return new Date(date).toLocaleTimeString("en-US", {
+    hour12: true,
     hour: "numeric",
     minute: "numeric",
   });
 }
 
-function formatTooltipDate(date: Date) {
-  return date.toLocaleString("en-US", {
+function formatTooltipDate(date: number) {
+  return new Date(date).toLocaleString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
-    hourCycle: "h23",
+    hour12: true,
     hour: "numeric",
     minute: "numeric",
   });
@@ -54,13 +60,28 @@ const charts: ChartData[] = [
   },
 ];
 
+const OPTIMAL_TICK_COUNT = 20;
 export default function PerfCharts({
   data,
-  since,
 }: {
   data: PerfSample[];
   since: Date;
+  scale: "m" | "h" | "d";
 }) {
+  const processedData = useMemo(() => {
+    return data.map((d) => {
+      return { ...d, processedAt: d.processedAt.getTime() };
+    });
+  }, [data]);
+
+  const scale = useMemo(() => {
+    const domain = extent(processedData.map((d) => d.processedAt));
+    if (domain[0] === undefined || domain[1] === undefined) {
+      return undefined;
+    }
+    return scaleLinear().domain(domain);
+  }, [processedData]);
+
   return (
     <div>
       {charts.map((chart) => (
@@ -68,7 +89,7 @@ export default function PerfCharts({
           <h2 className="text-2xl ml-12 my-2">{chart.title}</h2>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart
-              data={data}
+              data={processedData}
               margin={{ top: 0, left: 50, right: 40 }}
               syncId="sync"
             >
@@ -76,7 +97,10 @@ export default function PerfCharts({
               <XAxis
                 dataKey="processedAt"
                 tickFormatter={formatDate}
-                interval="preserveEnd"
+                domain={scale?.domain()}
+                ticks={scale?.ticks(OPTIMAL_TICK_COUNT)}
+                scale="time"
+                type="number"
               />
               <YAxis />
               <Area
