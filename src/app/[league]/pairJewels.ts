@@ -1,4 +1,5 @@
 import notableIdMap from "@/generated/notableIdMap.json";
+import { ExchangeRates } from "@/server/db/schema";
 import { getLatestJewelSnapshotAndLeagues } from "@/server/queries";
 
 export interface JewelPair {
@@ -7,6 +8,8 @@ export interface JewelPair {
   ascendancy: string;
   flame: number;
   flesh: number;
+  flameDisplay: string;
+  fleshDisplay: string;
   sum: number;
   flameQuery: string;
   fleshQuery: string;
@@ -55,6 +58,10 @@ export function pairJewels(
     }
     if (jewel.jewelType === "Forbidden Flesh") {
       jewelMap[jewel.allocatedNode].flesh = jewel.windowPrice;
+      jewelMap[jewel.allocatedNode].fleshDisplay = roundCurrency(
+        jewel.windowPrice,
+        jewels.exchangeRates,
+      );
       jewelMap[jewel.allocatedNode].fleshQuery = buildTradeUrl(
         league,
         jewel.jewelType,
@@ -62,6 +69,10 @@ export function pairJewels(
       );
     } else if (jewel.jewelType === "Forbidden Flame") {
       jewelMap[jewel.allocatedNode].flame = jewel.windowPrice;
+      jewelMap[jewel.allocatedNode].flameDisplay = roundCurrency(
+        jewel.windowPrice,
+        jewels.exchangeRates,
+      );
       jewelMap[jewel.allocatedNode].flameQuery = buildTradeUrl(
         league,
         jewel.jewelType,
@@ -81,4 +92,29 @@ export function pairJewels(
   }
 
   return jewelPairs;
+}
+
+// If the rounding rules allow, prefer to display the price as a unit of this
+// currency in order of priority
+const PREFERRED_CURRENCY = ["mirror", "divine"];
+
+// assumption: valueInChaos is always at least 1. maybe enforce this on the river side
+export function roundCurrency(
+  valueInChaos: number,
+  exchangeRates: Record<string, number>,
+) {
+  let finalCurrency = "chaos";
+  let finalValue = valueInChaos;
+  for (let i = 0; i < PREFERRED_CURRENCY.length; i++) {
+    const c = PREFERRED_CURRENCY[i];
+    const rate = exchangeRates[c];
+    if (!rate) continue;
+    const nextValue = finalValue / rate;
+    if (nextValue >= 1) {
+      finalValue = nextValue;
+      finalCurrency = c;
+    }
+  }
+
+  return `${finalValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 })} ${finalCurrency}`;
 }

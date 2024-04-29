@@ -40,22 +40,30 @@ interface ChartData {
   title: string;
   dataKey: string;
   color: string;
+  dot: boolean;
+  sync: string;
 }
 const charts: ChartData[] = [
   {
     title: "River head drift",
     dataKey: "driftFromHead",
     color: "#8884d8",
+    dot: true,
+    sync: "sync2",
   },
   {
     title: "Changeset processing time (ms)",
     dataKey: "timeTaken",
     color: "#82ca9d",
+    dot: false,
+    sync: "sync",
   },
   {
     title: "Stashes per changeset",
     dataKey: "stashCount",
     color: "#ff7300",
+    dot: false,
+    sync: "sync",
   },
 ];
 
@@ -87,7 +95,7 @@ export default function PerfCharts({
             <AreaChart
               data={processedData}
               margin={{ top: 0, left: 50, right: 40 }}
-              syncId="sync"
+              syncId={chart.sync}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
@@ -105,10 +113,12 @@ export default function PerfCharts({
                 stroke={chart.color}
                 fill={chart.color}
                 dot={false}
+                connectNulls
               />
               <Tooltip
                 labelClassName="text-slate-800"
                 labelFormatter={formatTooltipDate}
+                // filterNull={false}
               />
             </AreaChart>
           </ResponsiveContainer>

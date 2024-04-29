@@ -45,7 +45,7 @@ export const changesets = pgTable(
     stashCount: integer("stashcount").notNull(),
     processedAt: timestamp("processedat").notNull(),
     timeTaken: integer("timetaken").notNull(),
-    driftFromHead: integer("driftfromhead").notNull(),
+    driftFromHead: integer("driftfromhead"),
   },
   (changesets) => ({
     changesetsByChangeId: index("changesets_by_changeid").on(
